@@ -1,0 +1,3 @@
+python 010determine_read_type.py
+python 015map_hits_to_regions.py
+python 020hit_statistics.py
