@@ -17,14 +17,13 @@ if __name__ == '__main__':
         sid, strand, chrom, pos, seq, _, _ = l.strip().split('\t')
         pos = int(pos)
         if chrom not in hits: hits[chrom] = []
-        hits[chrom].append({'sid' : sid,
-                            'strand' : strand,
-                            'start' : pos,
-                            'end' : pos + len(seq),
-                            'chrom' : chrom })
+        hits[chrom].append((sid,
+                            strand,
+                            pos,
+                            pos + len(seq)))
 
     for chrom in hits:
-        hits[chrom] = sorted(hits[chrom], key = lambda reg: reg['start'])
+        hits[chrom] = sorted(hits[chrom], key = lambda reg: reg[2])
     elapsed('read hits')
 
 
@@ -36,17 +35,17 @@ if __name__ == '__main__':
         print len(hits[chrom]), len(anno[chrom])
 
         r_index = 0
-        for  hit in hits[chrom]:
+        for sid, strand, start, end in hits[chrom]:
             hit_anno = []
 
-            while r_index < len(anno[chrom]) and hit['start'] > anno[chrom][r_index]['end']:
+            while r_index < len(anno[chrom]) and start > anno[chrom][r_index]['end']:
                 r_index += 1
             tmp_ri = r_index
 
             read_type = 'none'
-            while tmp_ri < len(anno[chrom]) and hit['end'] >= anno[chrom][tmp_ri]['start']:
+            while tmp_ri < len(anno[chrom]) and end >= anno[chrom][tmp_ri]['start']:
 
-                if anno[chrom][tmp_ri]['strand'] == hit['strand'] and partial_overlap(hit['start'], hit['end'], anno[chrom][tmp_ri]['start'],  anno[chrom][tmp_ri]['end']):
+                if anno[chrom][tmp_ri]['strand'] == strand and partial_overlap(start, end, anno[chrom][tmp_ri]['start'],  anno[chrom][tmp_ri]['end']):
                     if anno[chrom][tmp_ri]['type'] == 'exon':
                         read_type = 'exon'
                         break
@@ -55,7 +54,7 @@ if __name__ == '__main__':
 
                 tmp_ri += 1
 
-            hit_reg[ hit['sid']] = read_type
+            hit_reg[sid] = read_type
 
 
         elapsed(chrom)

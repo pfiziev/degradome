@@ -43,8 +43,8 @@ def strongtype(method):
 
     return new_method
 
-mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m20k20b.bt')
-#mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m1k1b.bt')
+#mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m20k20b.bt')
+mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m1k1b.bt')
 mapped_reads_010 = mapped_reads + '.010anno'
 mapped_reads_015 = mapped_reads + '.015map_hits'
 
