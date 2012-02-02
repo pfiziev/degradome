@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import sys
 from utils import *
 
 __author__ = 'pf'
@@ -13,6 +14,12 @@ if __name__ == '__main__':
     fstats = defaultdict(lambda: defaultdict(lambda: 0))
     bstats = defaultdict(lambda: defaultdict(lambda: 0))
     lstats = defaultdict(lambda: defaultdict(lambda: 0))
+
+    if len(sys.argv) > 1:
+        mapped_reads_015 = sys.argv[1]+ '.010anno' + '.015map_hits'
+
+    print 'input:', mapped_reads_015
+
     for l in open(mapped_reads_015):
         reg = json.loads(l)
         key = "%(chrom)s %(start)d %(end)d" % reg
@@ -42,11 +49,19 @@ if __name__ == '__main__':
                 stats[regtype][pos] = [stats[regtype][pos], regs_greater]
 
 
+
+    elapsed('initial stats')
+
+
     amend_stats(fstats)
+    elapsed('ammend_stats: fstats')
+
     amend_stats(bstats)
+    elapsed('ammend_stats: bstats')
 
 
-    open(mapped_reads_015+'.020stats','w').write(json.dumps({'fstats': fstats, 'bstats' : bstats}))
+    json.dump({'fstats': fstats, 'bstats' : bstats}, open(mapped_reads_015+'.020stats','w'), indent = 1)
+    elapsed('020hit_statistics.py')
 
     """
     # to plot the data

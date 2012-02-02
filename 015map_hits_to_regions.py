@@ -1,6 +1,7 @@
 import json
 import os
 from pprint import pformat
+import sys
 from utils import *
 
 __author__ = 'pf'
@@ -10,12 +11,22 @@ if __name__ == '__main__':
 
     # read annotation
     anno = read_annotation()
+
+    if len(sys.argv) > 1:
+        mapped_reads = sys.argv[1]
+        mapped_reads_010 = sys.argv[1]+'.010anno'
+        mapped_reads_015 = mapped_reads_010 + '.015map_hits'
+
+
+    print 'mapped_reads:', mapped_reads
+    print 'mapped_reads_010:', mapped_reads_010
+
     hit_reg = json.load(open(mapped_reads_010))
     elapsed('hit_reg annotation')
     # read bowtie hits
     hits = {}
     for l in open(mapped_reads):
-        sid, strand, chrom, pos, seq, _, _ = l.strip().split('\t')
+        sid, strand, chrom, pos, seq = l.strip().split('\t')[:5]
         pos = int(pos)
         if chrom not in hits: hits[chrom] = []
         hits[chrom].append((sid,

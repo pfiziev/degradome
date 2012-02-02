@@ -1,6 +1,7 @@
 import json
 import os
 from pprint import pformat
+import sys
 from utils import *
 
 __author__ = 'pf'
@@ -13,8 +14,18 @@ if __name__ == '__main__':
 
     # read bowtie hits
     hits = {}
+    if len(sys.argv) > 1:
+        mapped_reads = sys.argv[1]
+        mapped_reads_010 = mapped_reads + '.010anno'
+
+    print 'input:', mapped_reads
+
     for l in open(mapped_reads):
-        sid, strand, chrom, pos, seq, _, _ = l.strip().split('\t')
+        try:
+            sid, strand, chrom, pos, seq = l.strip().split('\t')[:5]
+        except:
+            print '|'+l.strip()+'|'
+            raise
         pos = int(pos)
         if chrom not in hits: hits[chrom] = []
         hits[chrom].append((sid,

@@ -44,9 +44,13 @@ def strongtype(method):
     return new_method
 
 #mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m20k20b.bt')
-mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m1k1b.bt')
+mapped_reads = os.path.join('U87_DroshaKD','Dro.fq.003noAdapters.n0m1k1b.bt111')
+#mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.n0m1k1b.bt')
+#mapped_reads = os.path.join('U87','U87.fq.noAdapters.contigFiltered.non_unique.bt')
 mapped_reads_010 = mapped_reads + '.010anno'
 mapped_reads_015 = mapped_reads + '.015map_hits'
+
+
 
 logfile = open(os.path.join('U87','log'), 'w')
 def logf(msg):
@@ -67,7 +71,7 @@ def total_overlap(s1, e1, s2, e2):
     return s1 <= s2 and e1 >= e2 or s2 <= s1 and e2 >= e1
 
 
-def read_annotation():
+def _read_annotation():
     anno = {}
     min_reg_length = 25
 
@@ -100,3 +104,21 @@ def read_annotation():
     elapsed('read annotation')
 
     return anno
+
+
+
+
+def read_annotation():
+    anno = json.load(open('hg19.merged.to.ensg.all.tx.03.18.2011.txt.with.genetypes.final.txt.007noConflicts'))
+
+    min_reg_length = 25
+
+    for chrom in anno:
+        anno[chrom] = [reg for reg in anno[chrom] if (reg['end'] - reg['start']) >= min_reg_length ]
+
+
+    elapsed('read annotation')
+
+    return anno
+
+
