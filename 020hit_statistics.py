@@ -56,7 +56,6 @@ if __name__ == '__main__':
 
     elapsed('initial stats')
 
-
     amend_stats(fstats)
     elapsed('ammend_stats: fstats')
 
