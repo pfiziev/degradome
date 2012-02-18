@@ -3,7 +3,7 @@ import os
 from pprint import pformat
 import sys
 from utils import *
-
+ 
 __author__ = 'pf'
 
 
@@ -21,17 +21,13 @@ if __name__ == '__main__':
     print 'input:', mapped_reads
 
     for l in open(mapped_reads):
-        try:
-            sid, strand, chrom, pos, seq = l.strip().split('\t')[:5]
-        except:
-            print '|'+l.strip()+'|'
-            raise
+        sid, strand, chrom, pos, seq = l.strip().split('\t')[:5]
         pos = int(pos)
         if chrom not in hits: hits[chrom] = []
         hits[chrom].append((sid,
                             strand,
                             pos,
-                            pos + len(seq)))
+                            pos + len(seq) - 1))
 
     for chrom in hits:
         hits[chrom] = sorted(hits[chrom], key = lambda reg: reg[2])
@@ -57,11 +53,12 @@ if __name__ == '__main__':
             while tmp_ri < len(anno[chrom]) and end >= anno[chrom][tmp_ri]['start']:
 
                 if anno[chrom][tmp_ri]['strand'] == strand and partial_overlap(start, end, anno[chrom][tmp_ri]['start'],  anno[chrom][tmp_ri]['end']):
-                    if anno[chrom][tmp_ri]['type'] == 'exon':
-                        read_type = 'exon'
+                    reg_type = anno[chrom][tmp_ri]['type']
+                    if reg_type == 'exon':
+                        read_type = reg_type
                         break
-                    else:
-                        read_type = 'intron'
+                    elif read_type == 'none' or reg_type == 'exon_noncoding':
+                        read_type = reg_type
 
                 tmp_ri += 1
 

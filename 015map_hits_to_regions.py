@@ -3,7 +3,7 @@ import os
 from pprint import pformat
 import sys
 from utils import *
-
+from collections import defaultdict
 __author__ = 'pf'
 
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         hits[chrom].append((sid,
                             strand,
                             pos,
-                            pos + len(seq)))
+                            pos + len(seq) - 1))
 
     sidi, strandi, starti, endi = 0, 1, 2, 3
 
@@ -58,8 +58,9 @@ if __name__ == '__main__':
             tmp_ri = r_index
 
 
-            region['forward_position'] = set()
-            region['backward_position'] = set()
+            region['forward_position'] = defaultdict(lambda : 0)
+            region['backward_position'] = defaultdict(lambda : 0)
+
             region['chrom'] = chrom
             while tmp_ri < len(hits[chrom]) and region['end'] >= hits[chrom][tmp_ri][starti]:
 
@@ -67,11 +68,11 @@ if __name__ == '__main__':
                    region['type'] == hit_reg[hits[chrom][tmp_ri][sidi]] and \
                    partial_overlap(region['start'], region['end'], hits[chrom][tmp_ri][starti],  hits[chrom][tmp_ri][endi]):
 
-                    region['forward_position'].add(       (hits[chrom][tmp_ri][starti] - region['start']) if region['strand'] == '+'
-                                                     else (region['end'] - hits[chrom][tmp_ri][endi]))
+                    region['forward_position'][  (hits[chrom][tmp_ri][starti] - region['start']) if region['strand'] == '+'
+                                                 else (region['end'] - hits[chrom][tmp_ri][endi])] += 1
 
-                    region['backward_position'].add(      (region['end'] - hits[chrom][tmp_ri][starti]) if region['strand'] == '+'
-                                                     else (hits[chrom][tmp_ri][endi] - region['start']))
+                    region['backward_position'][ (region['end'] - hits[chrom][tmp_ri][starti]) if region['strand'] == '+'
+                                                 else (hits[chrom][tmp_ri][endi] - region['start'])] += 1
 
 
 
@@ -80,8 +81,8 @@ if __name__ == '__main__':
 #                    hit_anno.append(anno[chrom][tmp_ri])
                 tmp_ri += 1
 
-            region['forward_position'] = sorted(region['forward_position'])
-            region['backward_position'] = sorted(region['backward_position'])
+            region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= 1)
+            region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= 1)
 
             out.write(json.dumps(region)+'\n')
         elapsed(chrom)

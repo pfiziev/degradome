@@ -7,7 +7,7 @@ INTRON = 2
 rtypes = ['intergenic', 'exon', 'intron']
 
 if __name__ == '__main__':
-    anno = read_annotation()
+    anno = read_annotation_original()
     maxl = 0
     for chrom in anno:
         _maxl = max(r['end'] for r in anno[chrom])
@@ -32,6 +32,7 @@ if __name__ == '__main__':
             # reset the bitmap
             for i in xrange(len(bitmap)) :
                 bitmap[i] = INTERGENIC
+
 
 
             for reg in anno[chrom][strand]:
@@ -65,5 +66,5 @@ if __name__ == '__main__':
 
         elapsed(chrom)
 
-    json.dump(new_anno, open('hg19.merged.to.ensg.all.tx.03.18.2011.txt.with.genetypes.final.txt.007noConflicts', 'w'))
+    json.dump(new_anno, open('hg19.merged.to.ensg.all.tx.03.18.2011.txt.with.genetypes.final.txt.007noConflicts', 'w'), indent = 1)
     elapsed('dump')

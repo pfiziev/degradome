@@ -1,5 +1,6 @@
 from collections import defaultdict
 import json
+import random
 import sys
 from utils import *
 
@@ -9,83 +10,60 @@ __author__ = 'pf'
 
 if __name__ == '__main__':
 
+    # take into account hits with start positions between hit_start and hit_end
+    hit_start = 20
+    hit_end = 50
+    reg_type = 'intron'
+    pos_type = 'backward_position'
+
 
     seen = set()
-    fstats = defaultdict(lambda: defaultdict(lambda: 0))
-    bstats = defaultdict(lambda: defaultdict(lambda: 0))
-    lstats = defaultdict(lambda: defaultdict(lambda: 0))
 
     if len(sys.argv) > 1:
         mapped_reads_015 = sys.argv[1]+ '.010anno' + '.015map_hits'
+
+    target_regions = []
+    all_regions = []
 
     print 'input:', mapped_reads_015
 
     for l in open(mapped_reads_015):
         reg = json.loads(l)
-        key = "%(chrom)s %(start)d %(end)d" % reg
-        if key in seen: continue
+        key = '%(chrom)s %(start)d %(end)d' % reg
+        if reg['type'] != reg_type or key in seen: continue
         seen.add(key)
 
-        if reg['type'] == 'exon' and reg['end'] - reg['start'] + 1 > 20000:
+        reg_length = reg['end'] - reg['start'] + 1
+
+        if reg['type'] == 'exon' and reg_length > 20000:
             continue
 
-        for pos in reg['forward_position']:
-            fstats[reg['type']][pos] += 1
+        if any(hit_start <= pos <= hit_end for pos in reg[pos_type]):
+            target_regions.append(reg_length)
 
-        for pos in reg['backward_position']:
-            bstats[reg['type']][pos] += 1
+        all_regions.append(reg_length)
 
-        # count the regions that have (end - start) valid positions i.e. have length of (end - start + 1).
-        # remember, end is the 0-based position of the last nucleotide in the region ( seq[end] is a valid nucleotide position)
-        lstats[reg['type']][reg['end'] - reg['start']] += 1
-
-    def amend_stats(stats):
-        for regtype in stats:
-            regs_lengths = sorted(lstats[regtype], reverse = True)
-            regs_index = 0
-            regs_greater = 0
-            for pos in sorted(stats[regtype], reverse = True):
-
-                while regs_index < len(regs_lengths) and regs_lengths[regs_index] >= pos:
-                    regs_greater += lstats[regtype][regs_lengths[regs_index]]
-                    regs_index += 1
-
-                stats[regtype][pos] = [stats[regtype][pos], regs_greater]
-
+    random_regions = random.sample(all_regions, 1000)
 
 
     elapsed('initial stats')
 
 
-    amend_stats(fstats)
-    elapsed('ammend_stats: fstats')
 
-    amend_stats(bstats)
-    elapsed('ammend_stats: bstats')
+    # plot the histogram
 
 
-    json.dump({'fstats': fstats, 'bstats' : bstats}, open(mapped_reads_015+'.020stats','w'), indent = 1)
-    elapsed('020hit_statistics.py')
-
-    """
-    # to plot the data
-
-import matplotlib.pyplot as plt
-import json
-
-stats = json.load(open('/home/pf/UCLA/WINTER 2012/Grace/degradome/U87/U87.fq.noAdapters.contigFiltered.n0m1k1b.bt.015map_hits.020stats'))
-rtype = 'intron'
-fstats = stats['bstats']
-to_plot = sorted((int(k)+1, float(fstats[rtype][k][0])/fstats[rtype][k][1]) for k in fstats[rtype] if int(k) >= 0)[:200]
+    import matplotlib.pyplot as plt
 
 
-# first we'll do it the default way, with gaps on weekends
-fig = plt.figure()
-ax = fig.add_subplot(111)
+    # first we'll do it the default way, with gaps on weekends
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
 
-ax.plot([c[0] for c in to_plot], [c[1] for c in to_plot], 'o')
-
-    """
+    #    ax.plot([c[0] for c in to_plot], [c[1] for c in to_plot], 'o')
+    ax.hist(target_regions, 100, facecolor='green', alpha=0.75)
+    ax.hist(random_regions, 100, facecolor='blue', alpha=0.75)
+    fig.savefig('030length_histogram.png')
 
 #    # read annotation
 #    anno = read_annotation()
