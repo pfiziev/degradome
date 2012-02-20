@@ -105,6 +105,7 @@ def read_annotation_original():
                                     'type' : 'exon'+noncoding,
                                     'strand' : strand,
                                     'tid' : _buf[0],
+                                    'chrom' : chrom,
                                     'number' : i + 1 if strand == '+' else len(e_sts) - i})
 
             if i < len(e_sts) - 1 and e_sts[i+1] - e_ens[i] - 1 >= min_reg_length:
@@ -112,6 +113,7 @@ def read_annotation_original():
                                     'end' : e_sts[i+1] - 1,
                                     'type' : 'intron',
                                     'strand' : strand,
+                                    'chrom' : chrom,
                                     'tid' : _buf[0],
                                     'number' : i + 1 if strand == '+' else len(e_sts) - i - 1})
 
@@ -137,5 +139,51 @@ def read_annotation():
 
     return anno
 
-read_annotation = read_annotation_original
+
+
+def _read_annotation_skip_overlapping_regions():
+    """ Return annotations only for non-overlapping regions """
+    
+    original_anno = read_annotation_original()
+    original_anno = dict((chrom, dict((strand, [reg for reg in original_anno[chrom] if reg['strand'] == strand])
+                            for strand in ['+', '-'])) for chrom in original_anno)
+
+    anno = {}
+
+    hreg = lambda reg: '%(chrom)s %(strand)s %(start)d %(end)d' % reg
+
+    for chrom in original_anno:
+        anno[chrom] = []
+
+        for strand in original_anno[chrom]:
+            regions = original_anno[chrom][strand]
+
+            i = 0
+            while i < len(regions):
+                reg = regions[i]
+                temp_i = i + 1
+                c_end = reg['end']
+                overlap = False
+                c_hreg = hreg(reg)
+
+                while temp_i < len(regions) and regions[temp_i]['start'] <= c_end:
+                    if c_hreg != hreg(regions[temp_i]):
+                        overlap = True
+                    c_end = max(c_end, regions[temp_i]['end'])
+                    temp_i += 1
+
+                if not overlap:
+                    anno[chrom].append(reg)
+
+                i = temp_i
+
+        anno[chrom] = sorted(anno[chrom], key = lambda reg: reg['start'])
+
+#    json.dump(anno, open('temp_anno','w'))
+    elapsed('filter overlapping annotation')
+
+    return anno
+
+
+read_annotation = _read_annotation_skip_overlapping_regions
 

@@ -4,7 +4,8 @@ from utils import *
 import json
 from pyfasta import *
 
-hg19 = '/media/Data/UCLA/databases/genomes/hg19'
+# this is made so it will work under linux and windows due to different path separators
+hg19 = reduce(os.path.join, '../../../databases/genomes/hg19'.split('/'))
 
 
 if __name__ == '__main__':
@@ -28,7 +29,7 @@ if __name__ == '__main__':
     # find out the position with the highest reads/regions ratio
     mpos = {}
     for r_type in stats:
-        to_plot = sorted((int(k), float(stats[r_type][k][0])/stats[r_type][k][1]) for k in stats[r_type] if int(k) >= 0)[:200]
+        to_plot = sorted((int(k), float(stats[r_type][k][0])/stats[r_type][k][1]) for k in stats[r_type] if int(k) >= 0)[10:200]
         mpos[r_type] = max(to_plot, key = lambda tp: tp[1])[0]
 
     RANGE_START = 0 # start the range relative to this position from mpos
@@ -57,7 +58,7 @@ if __name__ == '__main__':
     for r_type in regions:
         out = open(mapped_reads_020 + '.040_' + r_type + '.fa', 'w')
         chrom = None
-        for reg in sorted(regions[r_type], key = lambda r: r['chrom']):
+        for i, reg in enumerate(sorted(regions[r_type], key = lambda r: r['chrom'])):
             if reg['chrom'] != chrom:
                 chrom = reg['chrom']
                 f = Fasta(os.path.join(hg19, chrom + '.fa'), flatten_inplace=True)
@@ -65,8 +66,14 @@ if __name__ == '__main__':
             cut_start = reg['end'] - reg['peak'] - 1
             cut_end = reg['end'] - reg['peak'] + 16
 
-            out.write('>%s_%s_%d_%d_%s cut:%d-%d\n%s\n' % (r_type, chrom, reg['start'], reg['end'], reg['strand'], cut_start, cut_end,
-                                                        f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
+            out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
+                                                                'peak' : reg['peak'],
+                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
+                                                                'strand': reg['strand'],
+                                                                'tid' : reg.get('tid'),
+                                                                'type' : reg['type'],
+                                                                'cut': [cut_start, cut_end]}),
+                                                    f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
 
 
 
