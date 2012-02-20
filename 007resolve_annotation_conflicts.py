@@ -3,8 +3,9 @@ from utils import *
 INTERGENIC = 0
 EXON = 1
 INTRON = 2
+EXON_NONCODING = 3
 
-rtypes = ['intergenic', 'exon', 'intron']
+rtypes = ['intergenic', 'exon', 'intron', 'exon_noncoding']
 
 if __name__ == '__main__':
     anno = read_annotation_original()
@@ -38,7 +39,7 @@ if __name__ == '__main__':
             for reg in anno[chrom][strand]:
 
                 # skip identical regions
-                rkey = '%s %d %d' % (chrom, reg['start'], reg['end'])
+                rkey = '%s %d %d %s' % (chrom, reg['start'], reg['end'], reg['type'])
                 if rkey in seen: continue
                 seen.add(rkey)
 
@@ -47,7 +48,11 @@ if __name__ == '__main__':
                     for i in xrange(reg['start'], reg['end']+1):
                         bitmap[i] = EXON
 
-                if reg['type'] == 'intron':
+                elif reg['type'] == 'exon_noncoding':
+                    for i in xrange(reg['start'], reg['end']+1):
+                        if bitmap[i] in [INTERGENIC, INTRON]: bitmap[i] = EXON_NONCODING
+
+                elif reg['type'] == 'intron':
                     for i in xrange(reg['start'], reg['end']+1):
                         if bitmap[i] == INTERGENIC: bitmap[i] = INTRON
 

@@ -4,7 +4,7 @@ from utils import mapped_reads_015, mapped_reads_020
 from pfutils import *
 
 
-snoRNA_annotation = '/home/pf/UCLA/databases/annotations/hg19_snoRNA'
+snoRNA_annotation = 'hg19_snoRNA'
 
 if __name__ == '__main__':
 
