@@ -65,7 +65,7 @@ if __name__ == '__main__':
             while tmp_ri < len(hits[chrom]) and region['end'] >= hits[chrom][tmp_ri][starti]:
 
                 if hits[chrom][tmp_ri][strandi] == region['strand'] and \
-                   region['type'] == hit_reg[hits[chrom][tmp_ri][sidi]] and \
+                   region['type'] == hit_reg[hits[chrom][tmp_ri][sidi]] and\
                    partial_overlap(region['start'], region['end'], hits[chrom][tmp_ri][starti],  hits[chrom][tmp_ri][endi]):
 
                     region['forward_position'][  (hits[chrom][tmp_ri][starti] - region['start']) if region['strand'] == '+'
@@ -75,14 +75,13 @@ if __name__ == '__main__':
                                                  else (hits[chrom][tmp_ri][endi] - region['start'])] += 1
 
 
-
 #                    anno[chrom][tmp_ri]['overlap'] = 'full' if anno[chrom][tmp_ri]['start'] <= hit['start'] and hit['end'] <= anno[chrom][tmp_ri]['end'] else 'partial'
 
 #                    hit_anno.append(anno[chrom][tmp_ri])
                 tmp_ri += 1
 
-            region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= 1)
-            region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= 1)
+            region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= 2)
+            region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= 2)
 
             out.write(json.dumps(region)+'\n')
         elapsed(chrom)

@@ -140,17 +140,20 @@ def read_annotation():
     return anno
 
 
+hash_region = lambda reg: '%(chrom)s %(strand)s %(start)d %(end)d' % reg
 
 def _read_annotation_skip_overlapping_regions():
     """ Return annotations only for non-overlapping regions """
     
     original_anno = read_annotation_original()
+
+    # separate annotation from the two strands
     original_anno = dict((chrom, dict((strand, [reg for reg in original_anno[chrom] if reg['strand'] == strand])
                             for strand in ['+', '-'])) for chrom in original_anno)
 
     anno = {}
 
-    hreg = lambda reg: '%(chrom)s %(strand)s %(start)d %(end)d' % reg
+    reglen = lambda reg: reg['end'] - reg['start'] + 1
 
     for chrom in original_anno:
         anno[chrom] = []
@@ -164,13 +167,19 @@ def _read_annotation_skip_overlapping_regions():
                 temp_i = i + 1
                 c_end = reg['end']
                 overlap = False
-                c_hreg = hreg(reg)
+                c_hreg = hash_region(reg)
+#                c_reglen = reglen(reg)
+#                longest_reg = reg
 
                 while temp_i < len(regions) and regions[temp_i]['start'] <= c_end:
-                    if c_hreg != hreg(regions[temp_i]):
+#                    if reglen(regions[temp_i]) > c_reglen:
+#                        longest_reg = regions[temp_i]
+                    if c_hreg != hash_region(regions[temp_i]):
                         overlap = True
                     c_end = max(c_end, regions[temp_i]['end'])
                     temp_i += 1
+
+#                anno[chrom].append(longest_reg)
 
                 if not overlap:
                     anno[chrom].append(reg)
@@ -186,4 +195,5 @@ def _read_annotation_skip_overlapping_regions():
 
 
 read_annotation = _read_annotation_skip_overlapping_regions
+#read_annotation = read_annotation_original
 

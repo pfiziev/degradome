@@ -9,8 +9,6 @@ __author__ = 'pf'
 
 if __name__ == '__main__':
 
-    # read annotation
-    anno = read_annotation()
 
     # read bowtie hits
     hits = {}
@@ -19,6 +17,10 @@ if __name__ == '__main__':
         mapped_reads_010 = mapped_reads + '.010anno'
 
     print 'input:', mapped_reads
+
+    # read annotation
+    anno = read_annotation_original()
+
 
     for l in open(mapped_reads):
         sid, strand, chrom, pos, seq = l.strip().split('\t')[:5]

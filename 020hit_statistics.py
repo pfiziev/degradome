@@ -72,7 +72,7 @@ if __name__ == '__main__':
 import matplotlib.pyplot as plt
 import json
 
-stats = json.load(open('/home/pf/UCLA/WINTER 2012/Grace/degradome/U87/U87.fq.noAdapters.contigFiltered.n0m1k1b.bt.015map_hits.020stats'))
+stats = json.load(open('/home/pf/UCLA/WINTER 2012/Grace/degradome/U87_DroshaKD/Dro.fq.003noAdapters.n0m1k1b.bt.010anno.015map_hits.020stats'))
 rtype = 'intron'
 fstats = stats['bstats']
 to_plot = sorted((int(k)+1, float(fstats[rtype][k][0])/fstats[rtype][k][1]) for k in fstats[rtype] if int(k) >= 0)[:200]

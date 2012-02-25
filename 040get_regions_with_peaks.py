@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # find out the position with the highest reads/regions ratio
     mpos = {}
     for r_type in stats:
-        to_plot = sorted((int(k), float(stats[r_type][k][0])/stats[r_type][k][1]) for k in stats[r_type] if int(k) >= 0)[10:200]
+        to_plot = sorted((int(k), float(stats[r_type][k][0])/stats[r_type][k][1]) for k in stats[r_type] if int(k) >= 0)[:200]
         mpos[r_type] = max(to_plot, key = lambda tp: tp[1])[0]
 
     RANGE_START = 0 # start the range relative to this position from mpos
@@ -55,6 +55,7 @@ if __name__ == '__main__':
 
 
     # cut and output +-10 nucleotides from each region
+    seen = set()
     for r_type in regions:
         out = open(mapped_reads_020 + '.040_' + r_type + '.fa', 'w')
         chrom = None
@@ -66,14 +67,31 @@ if __name__ == '__main__':
             cut_start = reg['end'] - reg['peak'] - 1
             cut_end = reg['end'] - reg['peak'] + 16
 
+            if hash_region(reg) in seen:
+                continue
+            seen.add(hash_region(reg))
+
+
             out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
                                                                 'peak' : reg['peak'],
                                                                 'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
                                                                 'strand': reg['strand'],
                                                                 'tid' : reg.get('tid'),
-                                                                'type' : reg['type'],
-                                                                'cut': [cut_start, cut_end]}),
-                                                    f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
+                                                                'type' : reg['type']
+                                                                }),
+                                                    f.sequence({'chr': chrom,
+                                                                'start': reg['start'],
+                                                                'stop': reg['end'],
+                                                                'strand': reg['strand']})))
+
+#            out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
+#                                                                'peak' : reg['peak'],
+#                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
+#                                                                'strand': reg['strand'],
+#                                                                'tid' : reg.get('tid'),
+#                                                                'type' : reg['type'],
+#                                                                'cut': [cut_start, cut_end]}),
+#                                                    f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
 
 
 
