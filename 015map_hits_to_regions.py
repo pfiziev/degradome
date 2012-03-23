@@ -80,8 +80,10 @@ if __name__ == '__main__':
 #                    hit_anno.append(anno[chrom][tmp_ri])
                 tmp_ri += 1
 
-            region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= 2)
-            region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= 2)
+            MIN_READS_PER_PEAK = 3
+
+            region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= MIN_READS_PER_PEAK)
+            region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= MIN_READS_PER_PEAK)
 
             out.write(json.dumps(region)+'\n')
         elapsed(chrom)

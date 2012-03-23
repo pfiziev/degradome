@@ -41,6 +41,8 @@ if __name__ == '__main__':
     out = open(mapped_reads_010, 'w')
     for chrom in sorted(hits)   :
         print 'annotating hits on', chrom
+        if chrom not in anno: continue
+
         print len(hits[chrom]), len(anno[chrom])
 
         r_index = 0

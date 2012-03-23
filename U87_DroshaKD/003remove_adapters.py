@@ -1,9 +1,8 @@
 import sys
-from utils import *
 
 
 DRO_PRIMER = 'AGCGCTAGTC'
-DRO_INPUT = os.path.join('U87_DroshaKD','Dro.fq')
+DRO_INPUT = 'Dro.fq'
 DRO_OUT = open(DRO_INPUT+'.003noAdapters','w')
 
 if __name__ == '__main__':
@@ -32,4 +31,4 @@ if __name__ == '__main__':
             entry = []
             lno = 0
     DRO_OUT.close()
-    elapsed('Total:' + str(total) + '\tDiscarded:'+str(discarded)+'\t'+str(float(100*discarded)/total))
+    print 'Total:' + str(total) + '\tDiscarded:'+str(discarded)+'\t'+str(float(100*discarded)/total)
