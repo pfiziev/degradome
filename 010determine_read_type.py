@@ -19,6 +19,8 @@ if __name__ == '__main__':
     print 'input:', mapped_reads
 
     # read annotation
+    # we need the original annotation to determine the read types! not the
+    # preprocessed one (where potential conflicts are resolved)
     anno = read_annotation_original()
 
 

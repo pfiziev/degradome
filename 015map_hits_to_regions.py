@@ -80,7 +80,7 @@ if __name__ == '__main__':
 #                    hit_anno.append(anno[chrom][tmp_ri])
                 tmp_ri += 1
 
-            MIN_READS_PER_PEAK = 3
+            MIN_READS_PER_PEAK = 2
 
             region['forward_position'] = sorted(pos for pos, count in region['forward_position'].iteritems() if count >= MIN_READS_PER_PEAK)
             region['backward_position'] = sorted(pos for pos, count in region['backward_position'].iteritems() if count >= MIN_READS_PER_PEAK)

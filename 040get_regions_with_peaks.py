@@ -1,4 +1,5 @@
 from itertools import imap
+import random
 import sys
 from find_regions_with_peaks_shared import find_regions_with_peaks
 from utils import *
@@ -13,7 +14,7 @@ hg19 = 'hg19'
 if __name__ == '__main__':
 
     if len(sys.argv) > 1:
-        mapped_reads_015 = sys.argv[1]+ '.010anno.015map_hits'
+        mapped_reads_015 = sys.argv[1]+ '.010anno.015map_hits'#+'_min2'
         mapped_reads_020 = mapped_reads_015 + '.020stats'
 
 
@@ -62,40 +63,60 @@ if __name__ == '__main__':
     seen = set()
     for r_type in regions:
         out = open(mapped_reads_020 + '.040_' + r_type + '.fa', 'w')
+#        out_random = open(mapped_reads_020 + '.040_random_' + r_type + '.fa', 'w')
         chrom = None
         for i, reg in enumerate(sorted(regions[r_type], key = lambda r: r['chrom'])):
             if reg['chrom'] != chrom:
                 chrom = reg['chrom']
                 f = Fasta(os.path.join(hg19, chrom + '.fa'), flatten_inplace=True)
 
-#            cut_start = reg['end'] - reg['peak'] - 1
-#            cut_end = reg['end'] - reg['peak'] + 16
+            if reg['strand'] == '+':
+                cut_start = reg['end'] - reg['peak'][0] - 2
+                cut_end = reg['end'] - reg['peak'][0] + 30
+            else:
+                cut_end = reg['start'] + reg['peak'][0] + 2
+                cut_start = reg['start'] + reg['peak'][0] - 30
+
+
+#            random_peak = random.randint(0, reg['end'] - reg['start'])
+#            random_cut_start = reg['end'] - random_peak - 2
+#            random_cut_end   = reg['end'] - random_peak + 30
 
             if hash_region(reg) in seen:
                 continue
             seen.add(hash_region(reg))
 
 
-            out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
-                                                                'peak' : reg['peak'],
-                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
-                                                                'strand': reg['strand'],
-                                                                'tid' : reg.get('tid'),
-                                                                'type' : reg['type']
-                                                                }),
-                                                    f.sequence({'chr': chrom,
-                                                                'start': reg['start'],
-                                                                'stop': reg['end'],
-                                                                'strand': reg['strand']})))
-
 #            out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
 #                                                                'peak' : reg['peak'],
 #                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
 #                                                                'strand': reg['strand'],
 #                                                                'tid' : reg.get('tid'),
+#                                                                'type' : reg['type']
+#                                                                }),
+#                                                    f.sequence({'chr': chrom,
+#                                                                'start': reg['start'],
+#                                                                'stop': reg['end'],
+#                                                                'strand': reg['strand']})))
+
+            out.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
+                                                                'peak' : reg['peak'],
+                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
+                                                                'strand': reg['strand'],
+                                                                'tid' : reg.get('tid'),
+                                                                'type' : reg['type'],
+                                                                'cut': [cut_start, cut_end]}),
+                                                    f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
+
+
+#            out_random.write('>%s_%d %s\n%s\n' % (r_type, i, json.dumps({
+#                                                                'peak' : random_peak,
+#                                                                'region' : '%(chrom)s:%(start)d-%(end)d' % reg,
+#                                                                'strand': reg['strand'],
+#                                                                'tid' : reg.get('tid'),
 #                                                                'type' : reg['type'],
-#                                                                'cut': [cut_start, cut_end]}),
-#                                                    f.sequence({'chr': chrom, 'start': cut_start, 'stop': cut_end, 'strand': reg['strand']})))
+#                                                                'cut': [random_cut_start, random_cut_end]}),
+#                                                    f.sequence({'chr': chrom, 'start': random_cut_start, 'stop': random_cut_end, 'strand': reg['strand']})))
 
 
 
@@ -104,4 +125,16 @@ if __name__ == '__main__':
     json.dump(regions, open(mapped_reads_020+'.040regions', 'w'), indent = 1)
     elapsed('040get_regions_with_peaks')
 
-
+## COMPUTE OVERLAP BETWEEN DIFFERENT DATASETS
+#
+#
+#import json
+#hela = json.load(open('/mnt/hoffman2/u/home/mcdb/pfiziev/projects/degradome/HeLa/ALL.fastq.trimmed.n0m1k1b.bt.010anno.015map_hits.020stats.040regions'))
+#u87 = json.load(open('/mnt/hoffman2/u/home/mcdb/pfiziev/projects/degradome/U87/U87.fq.noAdapters.n0m1k1b.bt.010anno.015map_hits.020stats.040regions'))
+#u87_dkd = json.load(open('/mnt/hoffman2/u/home/mcdb/pfiziev/projects/degradome/U87_DroshaKD/Dro.fq.003noAdapters.n0m1k1b.bt.010anno.015map_hits_min2.020stats.040regions'))
+#def rkey(reg):
+#    return "%(chrom)s:%(start)d-%(end)d" % reg
+#
+#rtype = 'exon_noncoding'
+#venn([map(rkey, hela[rtype]), map(rkey, u87[rtype]), map(rkey, u87_dkd[rtype])], ["HeLa", "U87", "U87_DroshaKD"], fill="number", show_names=True)
+#
